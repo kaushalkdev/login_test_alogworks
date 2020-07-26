@@ -127,6 +127,7 @@ class _SignUpState extends State<SignUp> {
             ));
           });
           if (res != null && res.contains("Success")) {
+            Navigator.pop(context);
             Navigator.pushReplacement(
                 context,
                 CupertinoPageRoute(
@@ -154,6 +155,7 @@ class _SignUpState extends State<SignUp> {
             ));
           });
           if (res != null) {
+            Navigator.pop(context);
             Navigator.pushReplacement(
                 context,
                 CupertinoPageRoute(
@@ -184,6 +186,7 @@ class _SignUpState extends State<SignUp> {
             ));
           });
           if (usermodel != null) {
+            Navigator.pop(context);
             Navigator.pushReplacement(
               context,
               CupertinoPageRoute(builder: (context) => HomePsge()),
