@@ -46,7 +46,7 @@ class _SignUpState extends State<SignUp> {
             //name
             TextFormField(
               validator: (name) {
-                if (name.isEmpty && name.contains("@")) {
+                if (name.isEmpty || name.contains("@")) {
                   return "Please enter a valid name";
                 } else
                   return null;
