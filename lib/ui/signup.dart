@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_login_test/index.dart';
 import 'package:flutter_login_test/model/user_model.dart';
 import 'package:flutter_login_test/util/firebase_service.dart';
+import 'package:flutter_login_test/util/local_database.dart';
 
 class SignUp extends StatefulWidget {
   @override
@@ -176,7 +177,7 @@ class _SignUpState extends State<SignUp> {
       onPressed: () async {
         if (_formKey.currentState.validate()) {
           _formKey.currentState.save();
-          var usermodel = await signUpWithEmail(
+          var res = await signUpWithEmail(
             name: name,
             emial: email,
             pass: password,
@@ -185,7 +186,7 @@ class _SignUpState extends State<SignUp> {
               content: Text("$onError"),
             ));
           });
-          if (usermodel != null) {
+          if (res) {
             Navigator.pop(context);
             Navigator.pushReplacement(
               context,
@@ -198,9 +199,8 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  Future<UserModel> signUpWithEmail(
-      {String emial, String pass, String name}) async {
-    return await FirebaseService().registerUser(
+  Future<bool> signUpWithEmail({String emial, String pass, String name}) async {
+    return await LocalDatabse().signUp(
       email: emial,
       name: name,
       password: pass,

@@ -31,8 +31,9 @@ dependencies:
   google_sign_in: ^4.5.1
   firebase_auth: ^0.16.0
   cloud_firestore: ^0.13.5
-  flutter_webview_plugin: ^0.3.11
   flutter_facebook_login: ^3.0.0
+  shared_preferences: ^0.5.8
+  encrypt: ^4.0.2
    
 
 dev_dependencies:

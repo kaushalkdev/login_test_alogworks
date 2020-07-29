@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_login_test/util/firebase_service.dart';
+import 'package:flutter_login_test/util/local_database.dart';
 import '../index.dart';
 
 class Splash extends StatefulWidget {
@@ -18,7 +18,10 @@ class _SplashState extends State<Splash> {
               context,
               CupertinoPageRoute(
                 builder: (context) => islogin ? HomePsge() : LoginPage(),
-              )));
+              )))
+          .catchError((onError) {
+        print("Error $onError");
+      });
     });
   }
 
@@ -43,10 +46,14 @@ class _SplashState extends State<Splash> {
   }
 
   Future<bool> fetchData() async {
-    var data = await FirebaseService().getCurrentUser();
-    if (data == null) {
+    var user = await LocalDatabse().getUser().catchError((onError) {
+      print("getting user eroor");
+    });
+    print(user.getUserName());
+    if (user.getisLogin() != null) {
+      return user.getisLogin();
+    } else {
       return false;
-    } else
-      return true;
+    }
   }
 }

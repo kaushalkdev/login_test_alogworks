@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_login_test/index.dart';
 import 'package:flutter_login_test/model/user_model.dart';
-import 'package:flutter_login_test/util/firebase_service.dart';
+import 'package:flutter_login_test/util/local_database.dart';
 
 class HomePsge extends StatefulWidget {
   @override
@@ -13,7 +13,7 @@ class _HomePsgeState extends State<HomePsge> {
   @override
   void initState() {
     super.initState();
-    getUser().then((value) {
+    LocalDatabse().getUser().then((value) {
       _userModel = value;
       setState(() {});
     });
@@ -40,7 +40,7 @@ class _HomePsgeState extends State<HomePsge> {
                   RaisedButton(
                       child: Text("Sign out"),
                       onPressed: () async {
-                        await FirebaseService().signOut();
+                        await LocalDatabse().signOut();
                         Navigator.pushReplacement(
                             context,
                             CupertinoPageRoute(
@@ -54,9 +54,5 @@ class _HomePsgeState extends State<HomePsge> {
               child: Text("Loading Please wait..."),
             ),
     );
-  }
-
-  Future<UserModel> getUser() async {
-    return await CloudFirestoreService().getUser();
   }
 }

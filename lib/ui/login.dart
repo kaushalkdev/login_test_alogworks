@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_login_test/index.dart';
 import 'package:flutter_login_test/util/firebase_service.dart';
+import 'package:flutter_login_test/util/local_database.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -146,15 +147,15 @@ class _LoginPageState extends State<LoginPage> {
       onPressed: () async {
         if (_formKey.currentState.validate()) {
           _formKey.currentState.save();
-          var res = await loginWithEmail(
-            emial: email,
+          bool res = await loginWithEmail(
+            email: email,
             pass: password,
           ).catchError((onError) {
             _scaffoldKey.currentState.showSnackBar(SnackBar(
               content: Text("$onError"),
             ));
           });
-          if (res != null) {
+          if (res) {
             Navigator.pushReplacement(
                 context,
                 CupertinoPageRoute(
@@ -170,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future loginWithEmail({String emial, String pass}) async {
-    return await FirebaseService().signInUser(email: email, password: pass);
+  Future<bool> loginWithEmail({String email, String pass}) async {
+    return LocalDatabse().logIn(email: email, password: pass);
   }
 }

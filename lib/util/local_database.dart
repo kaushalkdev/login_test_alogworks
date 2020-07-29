@@ -1,41 +1,57 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_login_test/index.dart';
-import 'package:flutter_login_test/model/user_model.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
-import 'package:flutter_login_test/util/local_database.dart';
+import 'package:flutter_login_test/model/user_model.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypt/encrypt.dart';
 
-class FirebaseService {
+class LocalDatabse {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  CloudFirestoreService cloudFirestoreService = CloudFirestoreService();
-
-  Future<FirebaseUser> getCurrentUser() async {
-    if (_auth != null)
-      return await _auth.currentUser();
-    else
-      return null;
+  final key = Key.fromUtf8('my 32 length key................');
+  final iv = IV.fromLength(16);
+  Encrypter encrypter;
+  LocalDatabse() {
+    encrypter = Encrypter(AES(key));
   }
 
-  // Future<UserModel> signInUser({
-  //   String email,
-  //   String password,
-  // }) async {
-  //   final FirebaseUser user = (await _auth.signInWithEmailAndPassword(
-  //           email: email, password: password))
-  //       .user;
+  Future<UserModel> getUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return UserModel(
+        userEmail: prefs.getString("email"),
+        userName: prefs.getString("name"),
+        isLogin: prefs.getBool("login"));
+  }
 
-  //   if (user != null) {
-  //     UserModel userModel =
-  //         await cloudFirestoreService.getUser().catchError((onError) {
-  //       print('Error Sign in $onError');
-  //     });
+  Future<bool> logIn({String email, String password}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final encrypted = encrypter.encrypt(password, iv: iv);
+    if (prefs.getString("email") == email &&
+        prefs.getString("password") == encrypted.base64) {
+      await prefs.setBool("login", true);
+      return true;
+    } else {
+      return false;
+    }
+  }
 
-  //     return userModel;
-  //   } else
-  //     return null;
-  // }
+  Future<bool> signUp({String name, String email, String password}) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final encrypted = encrypter.encrypt(password, iv: iv);
+    if ((await prefs.setString("name", name)) &&
+        (await prefs.setString("email", email)) &&
+        (await prefs.setBool("login", true)) &&
+        (await prefs.setString("password", encrypted.base64))) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> signOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return await prefs.setBool("login", false);
+  }
 
   Future<UserModel> handleGoogleSignIn() async {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
@@ -56,43 +72,6 @@ class FirebaseService {
       password: googleAuth.idToken,
     );
     return await LocalDatabse().getUser();
-  }
-
-  Future<UserModel> registerUser({
-    String name,
-    String email,
-    String password,
-  }) async {
-    final FirebaseUser user = (await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    ))
-        .user;
-
-    try {
-      await user.sendEmailVerification();
-    } catch (e) {
-      print("An error occured while trying to send email verification");
-      print(e.message);
-    }
-    DocumentReference docRef = await cloudFirestoreService.addUser(
-      userEmail: email,
-      userName: name,
-      uuid: user.uid,
-    );
-
-    if (docRef != null) {
-      return UserModel(
-        userEmail: email,
-        userName: user.displayName,
-        uuid: user.uid,
-      );
-    } else
-      return null;
-  }
-
-  Future<void> signOut() async {
-    await _auth.signOut();
   }
 
   Future<String> handleFaceBookSignin() async {
